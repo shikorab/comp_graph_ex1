@@ -271,7 +271,7 @@ public class RayTracer {
 	}
 
 	/*
-	 * Producing a BufferedImage that can be saved as png from a byte array of RGB values.
+	 * Producing a BufferedImage that can be saved as png from a byte array of RGB values
 	 */
 	public static BufferedImage bytes2RGB(int width, byte[] buffer) {
 		int height = buffer.length / width / 3;
