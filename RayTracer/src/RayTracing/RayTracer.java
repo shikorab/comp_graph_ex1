@@ -182,7 +182,17 @@ public class RayTracer {
 				else if (code.equals("cyl"))
 				{
 					// Add code here to parse cylinder parameters
-
+					double cx = Double.parseDouble(params[0]);
+					double cy = Double.parseDouble(params[1]);
+					double cz = Double.parseDouble(params[2]);
+					double len = Double.parseDouble(params[3]);
+					double radius = Double.parseDouble(params[4]);
+					double rx = Double.parseDouble(params[5]);
+					double ry = Double.parseDouble(params[6]);
+					double rz = Double.parseDouble(params[7]);
+					int mat_idx = Integer.parseInt(params[8]);
+					Cylinder cylinder = new Cylinder(cx, cy, cz, len, radius, rx, ry, rz, this.material_list.get(mat_idx));
+					this.cylinder_list.add(cylinder);
 					System.out.println(String.format("Parsed cylinder (line %d)", lineNum));
 				}
 				else if (code.equals("lgt"))
