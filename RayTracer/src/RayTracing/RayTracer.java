@@ -12,6 +12,14 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import RayTracerObj.Camera;
+import RayTracerObj.Cylinder;
+import RayTracerObj.Light;
+import RayTracerObj.Material;
+import RayTracerObj.Plane;
+import RayTracerObj.Settings;
+import RayTracerObj.Sphere;
+
 /**
  *  Main class for ray tracing exercise.
  */
@@ -19,7 +27,14 @@ public class RayTracer {
 
 	public int imageWidth;
 	public int imageHeight;
-
+	public Camera cam;
+	public Settings set;
+	public ArrayList<Material> material_list = new ArrayList<Material>(); 
+	public ArrayList<Sphere> Sphere_list = new ArrayList<Sphere>();
+	public ArrayList<Plane> plane_list = new ArrayList<Plane>();
+	public ArrayList<Cylinder> cylinder_list = new ArrayList<Cylinder>();
+	public ArrayList<Light> light_list = new ArrayList<Light>();
+	
 	/**
 	 * Runs the ray tracer. Takes scene file, output image file and image size as input.
 	 */
@@ -39,7 +54,7 @@ public class RayTracer {
 			String sceneFileName = args[0];
 			String outputFileName = args[1];
 
-			//Optional params
+			// Optional params
 			if (args.length > 3)
 			{
 				tracer.imageWidth = Integer.parseInt(args[2]);
@@ -96,37 +111,72 @@ public class RayTracer {
 				if (code.equals("cam"))
 				{
 					// Add code here to parse camera parameters
-
+					
+					double px = Double.parseDouble(params[0]);
+					double py = Double.parseDouble(params[1]);
+					double pz = Double.parseDouble(params[2]);
+					double lx = Double.parseDouble(params[3]);
+					double ly = Double.parseDouble(params[4]);
+					double lz = Double.parseDouble(params[5]);
+					double ux = Double.parseDouble(params[6]);
+					double uy = Double.parseDouble(params[7]);
+					double uz = Double.parseDouble(params[8]);
+					double sc_dist = Double.parseDouble(params[9]);
+					double sc_width = Double.parseDouble(params[10]);
+					this.cam = new Camera(px, py, pz, lx, ly, lz, ux, uy, uz, sc_dist, sc_width);
 					System.out.println(String.format("Parsed camera parameters (line %d)", lineNum));
 				}
 				else if (code.equals("set"))
 				{
 					// Add code here to parse general settings parameters
-
+					double bgr = Double.parseDouble(params[0]);
+					double bgg = Double.parseDouble(params[1]);
+					double bgb = Double.parseDouble(params[2]);
+					double sh_rays = Double.parseDouble(params[3]);
+					double rec_max = Double.parseDouble(params[4]);
+					this.set = new Settings(bgr, bgg, bgb, sh_rays, rec_max);
 					System.out.println(String.format("Parsed general settings (line %d)", lineNum));
 				}
 				else if (code.equals("mtl"))
 				{
 					// Add code here to parse material parameters
-
+					double dr = Double.parseDouble(params[0]);
+					double dg = Double.parseDouble(params[1]);
+					double db = Double.parseDouble(params[2]);
+					double sr = Double.parseDouble(params[3]);
+					double sg = Double.parseDouble(params[4]);
+					double sb = Double.parseDouble(params[5]);
+					double rr = Double.parseDouble(params[6]);
+					double rg = Double.parseDouble(params[7]);
+					double rb = Double.parseDouble(params[8]);
+					double phong = Double.parseDouble(params[9]);
+					double trans = Double.parseDouble(params[10]);
+					Material mtl = new Material(dr, dg, db, sr, sg, sb, rr, rg, rb, phong, trans);
+					this.material_list.add(mtl);
 					System.out.println(String.format("Parsed material (line %d)", lineNum));
 				}
 				else if (code.equals("sph"))
 				{
 					// Add code here to parse sphere parameters
-
-					// Example (you can implement this in many different ways!):
-					// Sphere sphere = new Sphere();
-					// sphere.setCenter(params[0], params[1], params[2]);
-					// sphere.setRadius(params[3]);
-					// sphere.setMaterial(params[4]);
-
+					double cx = Double.parseDouble(params[0]);
+					double cy = Double.parseDouble(params[1]);
+					double cz = Double.parseDouble(params[2]);
+					double radius = Double.parseDouble(params[3]);
+					int mat_idx = Integer.parseInt(params[4]);
+					Sphere sphere = new Sphere(cx, cy, cz, radius, this.material_list.get(mat_idx));
+					this.Sphere_list.add(sphere);
 					System.out.println(String.format("Parsed sphere (line %d)", lineNum));
 				}
 				else if (code.equals("pln"))
 				{
 					// Add code here to parse plane parameters
-
+					double nx = Double.parseDouble(params[0]);
+					double ny = Double.parseDouble(params[1]);
+					double nz = Double.parseDouble(params[2]);
+					double offset = Double.parseDouble(params[3]);
+					int mat_idx = Integer.parseInt(params[4]);
+					Plane plane = new Plane(nx, ny, nz, offset, this.material_list.get(mat_idx));
+					this.plane_list.add(plane);
 					System.out.println(String.format("Parsed plane (line %d)", lineNum));
 				}
 				else if (code.equals("cyl"))
@@ -137,8 +187,17 @@ public class RayTracer {
 				}
 				else if (code.equals("lgt"))
 				{
+					double px = Double.parseDouble(params[0]);
+					double py = Double.parseDouble(params[1]);
+					double pz = Double.parseDouble(params[2]);
+					double lr = Double.parseDouble(params[3]);
+					double lg = Double.parseDouble(params[4]);
+					double lb = Double.parseDouble(params[5]);
+					double specular_intesity = Double.parseDouble(params[6]);
+					double shadow_intesity = Double.parseDouble(params[7]);
+					double light_width = Double.parseDouble(params[7]);
 					// Add code here to parse light parameters
-
+					Light light = new Light(px, py, pz, lr, lg, lb, specular_intesity, shadow_intesity, light_width);
 					System.out.println(String.format("Parsed light (line %d)", lineNum));
 				}
 				else
