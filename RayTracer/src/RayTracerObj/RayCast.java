@@ -41,11 +41,9 @@ public class RayCast {
 	 * @param color
 	 */
 	public void setPixel(int x, int y, Color color) {
-		int xshift = x + imageWidth;
-		int yshift = y + imageHeight;
-		rgbData[(xshift + yshift * imageWidth)*3 + 0 /*red*/] = (byte) color.getRed();
-		rgbData[(xshift + yshift * imageWidth)*3 + 1 /*green*/] = (byte) color.getGreen();
-		rgbData[(xshift + yshift * imageWidth)*3 + 2 /*blue*/] = (byte) color.getBlue();
+		rgbData[(x + y * imageWidth)*3 + 0 /*red*/] = (byte) color.getRed();
+		rgbData[(x + y * imageWidth)*3 + 1 /*green*/] = (byte) color.getGreen();
+		rgbData[(x + y * imageWidth)*3 + 2 /*blue*/] = (byte) color.getBlue();
 	}
 
 	public Color getPixel(int x, int y) {
@@ -72,10 +70,20 @@ public class RayCast {
 	{
 		long startTime = System.currentTimeMillis();
 		
-		for (int x = -imageWidth/2; x < imageWidth/2; x++) {
-			for (int y = -imageHeight/2; y < imageHeight/2;y++) {
-				Ray ray = new Ray(camera, x, y);
+		for (int x = 0; x < imageWidth; x++) {
+			for (int y = 0; y < imageHeight;y++) {
+				//Convert to screen coordinates
+				//i.e. shift zero point to middle of the screen and multiply according to screen image proportion; 
+				int scx = (int) Math.floor(x/imageWidth * 2 * camera.getScWidth() - camera.getScWidth());
+				int scy = (int) Math.floor(y/imageHeight * 2 * camera.getScHeight() - camera.getScHeight());
+				
+				//Create Ray
+				Ray ray = new Ray(camera, scx, scy);
+				
+				//Find the relevant intersection
 				Intersection intersection = findIntersection(ray, scene);
+				
+				//*Set pixel color
 				setPixel(x, y, intersection.getColor());
 			}
 		}
