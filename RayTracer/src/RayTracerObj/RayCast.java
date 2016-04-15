@@ -36,14 +36,16 @@ public class RayCast {
 	/**
 	 * Each parameter represented AWT.Color (i.e. RGB)
 	 * 
-	 * @param x
-	 * @param y
+	 * @param xshift
+	 * @param yshift
 	 * @param color
 	 */
 	public void setPixel(int x, int y, Color color) {
-		rgbData[(x + y * imageWidth)*3 + 0 /*red*/] = (byte) color.getRed();
-		rgbData[(x + y * imageWidth)*3 + 1 /*green*/] = (byte) color.getGreen();
-		rgbData[(x + y * imageWidth)*3 + 1 /*green*/] = (byte) color.getBlue();
+		int xshift = x + imageWidth;
+		int yshift = y + imageHeight;
+		rgbData[(xshift + yshift * imageWidth)*3 + 0 /*red*/] = (byte) color.getRed();
+		rgbData[(xshift + yshift * imageWidth)*3 + 1 /*green*/] = (byte) color.getGreen();
+		rgbData[(xshift + yshift * imageWidth)*3 + 2 /*blue*/] = (byte) color.getBlue();
 	}
 
 	public Color getPixel(int x, int y) {
@@ -70,10 +72,10 @@ public class RayCast {
 	{
 		long startTime = System.currentTimeMillis();
 		
-		for (int x = 0; x < imageWidth; x++) {
-			for (int y = 0; y < imageHeight;y++) {
+		for (int x = -imageWidth/2; x < imageWidth/2; x++) {
+			for (int y = -imageHeight/2; y < imageHeight/2;y++) {
 				Ray ray = new Ray(camera, x, y);
-				Intersection intersection = new Intersection(ray, scene);
+				Intersection intersection = findIntersection(ray, scene);
 				setPixel(x, y, intersection.getColor());
 			}
 		}
@@ -95,6 +97,11 @@ public class RayCast {
 
 
 
+
+	private Intersection findIntersection(Ray ray, Scene scene) {
+		// TODO Auto-generated method stub
+		return new Intersection(ray, scene);
+	}
 
 	//////////////////////// FUNCTIONS TO SAVE IMAGES IN PNG FORMAT //////////////////////////////////////////
 

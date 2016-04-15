@@ -17,6 +17,8 @@ import RayTracerObj.Cylinder;
 import RayTracerObj.Light;
 import RayTracerObj.Material;
 import RayTracerObj.Plane;
+import RayTracerObj.RayCast;
+import RayTracerObj.Scene;
 import RayTracerObj.Settings;
 import RayTracerObj.Sphere;
 
@@ -27,13 +29,7 @@ public class RayTracer {
 
 	public int imageWidth;
 	public int imageHeight;
-	public Camera cam;
-	public Settings set;
-	public ArrayList<Material> material_list = new ArrayList<Material>(); 
-	public ArrayList<Sphere> Sphere_list = new ArrayList<Sphere>();
-	public ArrayList<Plane> plane_list = new ArrayList<Plane>();
-	public ArrayList<Cylinder> cylinder_list = new ArrayList<Cylinder>();
-	public ArrayList<Light> light_list = new ArrayList<Light>();
+	private Scene scene;
 	
 	/**
 	 * Runs the ray tracer. Takes scene file, output image file and image size as input.
@@ -64,19 +60,28 @@ public class RayTracer {
 
 			// Parse scene file:
 			tracer.parseScene(sceneFileName);
-
+			//Update Screen Height according aspect Ratio
+			double aspectRatio = tracer.imageHeight / tracer.imageWidth;
+			tracer.setAspectRatio(aspectRatio);
+			
 			// Render scene:
-			tracer.renderScene(outputFileName);
+			RayCast rayCast = new RayCast(tracer.imageWidth, tracer.imageHeight);
+			rayCast.renderScene(tracer.scene.cam, tracer.scene, outputFileName);
 
 		} catch (IOException e) {
 			System.out.println(e.getMessage());
 		} catch (RayTracerException e) {
 			System.out.println(e.getMessage());
 		} catch (Exception e) {
-			System.out.println(e.getMessage());
+			e.printStackTrace();
 		}
 
 
+	}
+
+	private void setAspectRatio(double aspectRatio) {
+		scene.cam.setAspectRatio(aspectRatio);
+		
 	}
 
 	/**
@@ -84,6 +89,8 @@ public class RayTracer {
 	 */
 	public void parseScene(String sceneFileName) throws IOException, RayTracerException
 	{
+		scene = new Scene();
+		
 		FileReader fr = new FileReader(sceneFileName);
 
 		BufferedReader r = new BufferedReader(fr);
@@ -123,7 +130,7 @@ public class RayTracer {
 					double uz = Double.parseDouble(params[8]);
 					double sc_dist = Double.parseDouble(params[9]);
 					double sc_width = Double.parseDouble(params[10]);
-					this.cam = new Camera(px, py, pz, lx, ly, lz, ux, uy, uz, sc_dist, sc_width);
+					scene.cam = new Camera(px, py, pz, lx, ly, lz, ux, uy, uz, sc_dist, sc_width);
 					System.out.println(String.format("Parsed camera parameters (line %d)", lineNum));
 				}
 				else if (code.equals("set"))
@@ -134,7 +141,7 @@ public class RayTracer {
 					double bgb = Double.parseDouble(params[2]);
 					double sh_rays = Double.parseDouble(params[3]);
 					double rec_max = Double.parseDouble(params[4]);
-					this.set = new Settings(bgr, bgg, bgb, sh_rays, rec_max);
+					scene.set = new Settings(bgr, bgg, bgb, sh_rays, rec_max);
 					System.out.println(String.format("Parsed general settings (line %d)", lineNum));
 				}
 				else if (code.equals("mtl"))
@@ -152,7 +159,7 @@ public class RayTracer {
 					double phong = Double.parseDouble(params[9]);
 					double trans = Double.parseDouble(params[10]);
 					Material mtl = new Material(dr, dg, db, sr, sg, sb, rr, rg, rb, phong, trans);
-					this.material_list.add(mtl);
+					scene.material_list.add(mtl);
 					System.out.println(String.format("Parsed material (line %d)", lineNum));
 				}
 				else if (code.equals("sph"))
@@ -163,8 +170,8 @@ public class RayTracer {
 					double cz = Double.parseDouble(params[2]);
 					double radius = Double.parseDouble(params[3]);
 					int mat_idx = Integer.parseInt(params[4]);
-					Sphere sphere = new Sphere(cx, cy, cz, radius, this.material_list.get(mat_idx));
-					this.Sphere_list.add(sphere);
+					Sphere sphere = new Sphere(cx, cy, cz, radius, scene.material_list.get(mat_idx));
+					scene.Sphere_list.add(sphere);
 					System.out.println(String.format("Parsed sphere (line %d)", lineNum));
 				}
 				else if (code.equals("pln"))
@@ -175,8 +182,8 @@ public class RayTracer {
 					double nz = Double.parseDouble(params[2]);
 					double offset = Double.parseDouble(params[3]);
 					int mat_idx = Integer.parseInt(params[4]);
-					Plane plane = new Plane(nx, ny, nz, offset, this.material_list.get(mat_idx));
-					this.plane_list.add(plane);
+					Plane plane = new Plane(nx, ny, nz, offset, scene.material_list.get(mat_idx - 1));
+					scene.plane_list.add(plane);
 					System.out.println(String.format("Parsed plane (line %d)", lineNum));
 				}
 				else if (code.equals("cyl"))
@@ -191,8 +198,8 @@ public class RayTracer {
 					double ry = Double.parseDouble(params[6]);
 					double rz = Double.parseDouble(params[7]);
 					int mat_idx = Integer.parseInt(params[8]);
-					Cylinder cylinder = new Cylinder(cx, cy, cz, len, radius, rx, ry, rz, this.material_list.get(mat_idx));
-					this.cylinder_list.add(cylinder);
+					Cylinder cylinder = new Cylinder(cx, cy, cz, len, radius, rx, ry, rz, scene.material_list.get(mat_idx));
+					scene.cylinder_list.add(cylinder);
 					System.out.println(String.format("Parsed cylinder (line %d)", lineNum));
 				}
 				else if (code.equals("lgt"))
@@ -224,78 +231,7 @@ public class RayTracer {
 
 	}
 
-	/**
-	 * Renders the loaded scene and saves it to the specified file location.
-	 */
-	public void renderScene(String outputFileName)
-	{
-		long startTime = System.currentTimeMillis();
-
-		// Create a byte array to hold the pixel data:
-		byte[] rgbData = new byte[this.imageWidth * this.imageHeight * 3];
-
-
-		// Put your ray tracing code here!
-		//
-		// Write pixel color values in RGB format to rgbData:
-		// Pixel [x, y] red component is in rgbData[(y * this.imageWidth + x) * 3]
-		//            green component is in rgbData[(y * this.imageWidth + x) * 3 + 1]
-		//             blue component is in rgbData[(y * this.imageWidth + x) * 3 + 2]
-		//
-		// Each of the red, green and blue components should be a byte, i.e. 0-255
-
-
-		long endTime = System.currentTimeMillis();
-		Long renderTime = endTime - startTime;
-
-		// The time is measured for your own conveniece, rendering speed will not affect your score
-		// unless it is exceptionally slow (more than a couple of minutes)
-		System.out.println("Finished rendering scene in " + renderTime.toString() + " milliseconds.");
-
-		// This is already implemented, and should work without adding any code.
-		saveImage(this.imageWidth, rgbData, outputFileName);
-
-		System.out.println("Saved file " + outputFileName);
-
-	}
-
-
-
-
-	//////////////////////// FUNCTIONS TO SAVE IMAGES IN PNG FORMAT //////////////////////////////////////////
-
-	/*
-	 * Saves RGB data as an image in png format to the specified location.
-	 */
-	public static void saveImage(int width, byte[] rgbData, String fileName)
-	{
-		try {
-
-			BufferedImage image = bytes2RGB(width, rgbData);
-			ImageIO.write(image, "png", new File(fileName));
-
-		} catch (IOException e) {
-			System.out.println("ERROR SAVING FILE: " + e.getMessage());
-		}
-
-	}
-
-	/*
-	 * Producing a BufferedImage that can be saved as png from a byte array of RGB values
-	 */
-	public static BufferedImage bytes2RGB(int width, byte[] buffer) {
-		int height = buffer.length / width / 3;
-		ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_sRGB);
-		ColorModel cm = new ComponentColorModel(cs, false, false,
-				Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
-		SampleModel sm = cm.createCompatibleSampleModel(width, height);
-		DataBufferByte db = new DataBufferByte(buffer, width * height);
-		WritableRaster raster = Raster.createWritableRaster(sm, db, null);
-		BufferedImage result = new BufferedImage(cm, raster, false, null);
-
-		return result;
-	}
-
+	
 	public static class RayTracerException extends Exception {
 		public RayTracerException(String msg) {  super(msg); }
 	}

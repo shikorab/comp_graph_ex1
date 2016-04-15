@@ -10,7 +10,7 @@ public class Intersection {
 
 	public Color getColor() {
 		// TODO Auto-generated method stub
-		return null;
+		return new Color(0, 0, 0);
 	}
 
 }

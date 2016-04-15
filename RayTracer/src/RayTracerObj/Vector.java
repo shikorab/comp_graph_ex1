@@ -47,4 +47,24 @@ public class Vector {
 		
 		return new Vector(x, y, z);
 	}
+	
+	public Point toPoint() {
+		return this.point;
+	}
+
+	public Vector add(Vector other) {
+		double x = (point.getX() + other.point.getX());
+		double y = (point.getY() + other.point.getY());
+		double z = (point.getZ() + other.point.getZ());
+		
+		return new Vector(x, y, z);		
+	}
+
+	public Vector mul(double d) {
+		double x = (point.getX() * d);
+		double y = (point.getY() * d);
+		double z = (point.getZ() * d);
+		
+		return new Vector(x, y, z);
+	}
 }

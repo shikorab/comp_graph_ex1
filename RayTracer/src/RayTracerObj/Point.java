@@ -59,4 +59,9 @@ public class Point {
 		this.z = z;
 	}
 	
+	/*Point to vector*/
+	public Vector toVec() {
+		return new Vector(this);
+	}
+	
 }
