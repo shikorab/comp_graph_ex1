@@ -1,6 +1,6 @@
 package RayTracerObj;
 
-public class Plane {
+public class Plane implements Surface {
 	final private Point normal;
 	final private double offset;
 	final private Material material;
@@ -17,6 +17,12 @@ public class Plane {
 		this.normal = new Point(nx, ny, nz);
 		this.offset = offset;
 		this.material = material;
+	}
+
+	@Override
+	public Intersection getIntersection(Ray ray) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -1,6 +1,5 @@
 package RayTracerObj;
 
-import java.awt.Color;
 import java.awt.Image;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
@@ -41,9 +40,9 @@ public class RayCast {
 	 * @param color
 	 */
 	public void setPixel(int x, int y, Color color) {
-		rgbData[(x + y * imageWidth)*3 + 0 /*red*/] = (byte) color.getRed();
-		rgbData[(x + y * imageWidth)*3 + 1 /*green*/] = (byte) color.getGreen();
-		rgbData[(x + y * imageWidth)*3 + 2 /*blue*/] = (byte) color.getBlue();
+		rgbData[(x + y * imageWidth)*3 + 0 /*red*/] = color.getRed();
+		rgbData[(x + y * imageWidth)*3 + 1 /*green*/] = color.getGreen();
+		rgbData[(x + y * imageWidth)*3 + 2 /*blue*/] = color.getBlue();
 	}
 
 	public Color getPixel(int x, int y) {
@@ -74,8 +73,8 @@ public class RayCast {
 			for (int y = 0; y < imageHeight;y++) {
 				//Convert to screen coordinates
 				//i.e. shift zero point to middle of the screen and multiply according to screen image proportion; 
-				int scx = (int) Math.floor(x/imageWidth * 2 * camera.getScWidth() - camera.getScWidth());
-				int scy = (int) Math.floor(y/imageHeight * 2 * camera.getScHeight() - camera.getScHeight());
+				double scx = x/imageWidth * 2 * camera.getScWidth() - camera.getScWidth();
+				double scy = y/imageHeight * 2 * camera.getScHeight() - camera.getScHeight();
 				
 				//Create Ray
 				Ray ray = new Ray(camera, scx, scy);
@@ -84,7 +83,9 @@ public class RayCast {
 				Intersection intersection = findIntersection(ray, scene);
 				
 				//*Set pixel color
-				setPixel(x, y, intersection.getColor());
+				if (intersection != null) {
+					setPixel(x, y, intersection.getColor());
+				}
 			}
 		}
 		// Put your ray tracing code here!
@@ -107,8 +108,23 @@ public class RayCast {
 
 
 	private Intersection findIntersection(Ray ray, Scene scene) {
-		// TODO Auto-generated method stub
-		return new Intersection(ray, scene);
+		double minDistance = Double.MAX_VALUE;
+		Intersection minInter = null;
+		Point P0 = ray.getP0();
+		
+		for (Surface surface: scene) {
+			Intersection intersection = surface.getIntersection(ray);
+			if (intersection == null) continue; //No intersection
+			
+			Vector interVec = intersection.getPoint().toVec().sub(P0.toVec());
+			double distance = Math.sqrt(interVec.dotProduct(interVec));
+			if (distance < minDistance) {
+				minDistance = distance;
+				minInter = intersection;
+			}
+		}
+		
+		return minInter;
 	}
 
 	//////////////////////// FUNCTIONS TO SAVE IMAGES IN PNG FORMAT //////////////////////////////////////////

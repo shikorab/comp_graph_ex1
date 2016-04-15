@@ -1,6 +1,6 @@
 package RayTracerObj;
 
-public class Cylinder {
+public class Cylinder implements Surface {
 	final private Point position;
 	final private Angle angle;
 	final private double length;
@@ -15,5 +15,13 @@ public class Cylinder {
 		this.radius = radius;
 		this.material = material;
 	}
+
+	@Override
+	public Intersection getIntersection(Ray ray) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	
 
 }

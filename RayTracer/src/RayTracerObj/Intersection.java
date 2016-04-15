@@ -1,16 +1,22 @@
 package RayTracerObj;
 
-import java.awt.Color;
-
 public class Intersection {
 
-	public Intersection(Ray ray, Scene scene) {
-		// TODO Auto-generated constructor stub
+	public Material material;
+	public Point point;
+	
+	public Intersection(Point p, Material material) {
+		point = p;
+		this.material = material;
 	}
 
 	public Color getColor() {
-		// TODO Auto-generated method stub
-		return new Color(0, 0, 0);
+		Color dcol = material.diffuse_color;
+		return dcol.mul(256);
+	}
+	
+	public Point getPoint() {
+		return point;
 	}
 
 }

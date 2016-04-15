@@ -159,7 +159,7 @@ public class RayTracer {
 					double phong = Double.parseDouble(params[9]);
 					double trans = Double.parseDouble(params[10]);
 					Material mtl = new Material(dr, dg, db, sr, sg, sb, rr, rg, rb, phong, trans);
-					scene.material_list.add(mtl);
+					scene.materialList.add(mtl);
 					System.out.println(String.format("Parsed material (line %d)", lineNum));
 				}
 				else if (code.equals("sph"))
@@ -170,8 +170,8 @@ public class RayTracer {
 					double cz = Double.parseDouble(params[2]);
 					double radius = Double.parseDouble(params[3]);
 					int mat_idx = Integer.parseInt(params[4]);
-					Sphere sphere = new Sphere(cx, cy, cz, radius, scene.material_list.get(mat_idx));
-					scene.Sphere_list.add(sphere);
+					Sphere sphere = new Sphere(cx, cy, cz, radius, scene.materialList.get(mat_idx - 1));
+					scene.sphereList.add(sphere);
 					System.out.println(String.format("Parsed sphere (line %d)", lineNum));
 				}
 				else if (code.equals("pln"))
@@ -182,8 +182,8 @@ public class RayTracer {
 					double nz = Double.parseDouble(params[2]);
 					double offset = Double.parseDouble(params[3]);
 					int mat_idx = Integer.parseInt(params[4]);
-					Plane plane = new Plane(nx, ny, nz, offset, scene.material_list.get(mat_idx - 1));
-					scene.plane_list.add(plane);
+					Plane plane = new Plane(nx, ny, nz, offset, scene.materialList.get(mat_idx - 1));
+					scene.planeList.add(plane);
 					System.out.println(String.format("Parsed plane (line %d)", lineNum));
 				}
 				else if (code.equals("cyl"))
@@ -198,8 +198,8 @@ public class RayTracer {
 					double ry = Double.parseDouble(params[6]);
 					double rz = Double.parseDouble(params[7]);
 					int mat_idx = Integer.parseInt(params[8]);
-					Cylinder cylinder = new Cylinder(cx, cy, cz, len, radius, rx, ry, rz, scene.material_list.get(mat_idx));
-					scene.cylinder_list.add(cylinder);
+					Cylinder cylinder = new Cylinder(cx, cy, cz, len, radius, rx, ry, rz, scene.materialList.get(mat_idx - 1));
+					scene.cylinderList.add(cylinder);
 					System.out.println(String.format("Parsed cylinder (line %d)", lineNum));
 				}
 				else if (code.equals("lgt"))

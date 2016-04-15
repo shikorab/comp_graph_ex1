@@ -16,6 +16,22 @@ public class Color {
 		this.g = g;
 		this.b = b;
 	}
+
+	public Color mul(int i) {
+		return new Color(r * i, g * i, b * i);
+	}
+	
+	public byte getBlue() {
+		return (byte) b;
+	}
+	
+	public byte getRed() {
+		return (byte) r;
+	}
+	
+	public byte getGreen() {
+		return (byte) g;
+	}
 	
 	
 }

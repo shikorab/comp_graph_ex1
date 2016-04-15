@@ -14,9 +14,9 @@ public class Camera {
 	private Vector upVec;
 	private Vector rightVec;
 	
-	private Point scTop;
-	private Point scBottom;
-	private Point scRight;
+//	private Point scTop;
+//	private Point scBottom;
+//	private Point scRight;
 	private Point scLeft;
 	
 		
@@ -33,22 +33,24 @@ public class Camera {
 		this.lookAtVec = this.getLookAt().toVec().normalize();
 		
 		/*towards vector*/
-		this.towardsVec = this.getPosition().toVec().normalize();
-		this.towardsVec = this.lookAtVec.sub(this.towardsVec).normalize();
+		this.towardsVec = this.getPosition().toVec();
+		this.towardsVec = this.getLookAt().toVec().sub(this.towardsVec).normalize();
 		
 		/*up vector*/
-		this.upVec = this.getLookAt().toVec();
+		this.upVec = this.getUp().toVec();
 		/*Fix up vector*/
-		this.upVec = this.upVec.crossProduct(this.towardsVec).crossProduct(this.towardsVec).normalize();
+		this.upVec = this.towardsVec.crossProduct(this.upVec.crossProduct(this.towardsVec)).normalize();
 		
 		/*Calc right vector*/
 		this.rightVec = this.towardsVec.crossProduct(this.upVec).normalize();
-		
+
 		/*Calc screen points*/
-		scTop = this.position.toVec().add(this.towardsVec.mul(this.scDist)).add(this.upVec.mul(this.scHeight)).toPoint();
-		scBottom = this.position.toVec().add(this.towardsVec.mul(this.scDist)).sub(this.upVec.mul(this.scHeight)).toPoint();
-		scRight = this.position.toVec().add(this.towardsVec.mul(this.scDist)).add(this.rightVec.mul(this.scWidth)).toPoint();
-		scLeft = this.position.toVec().add(this.towardsVec.mul(this.scDist)).add(this.rightVec.mul(this.scWidth)).toPoint();
+//		scTop = this.position.toVec().add(this.towardsVec.mul(this.scDist)).add(this.upVec.mul(this.scHeight)).toPoint();/*
+//		scBottom = this.position.toVec().add(this.towardsVec.mul(this.scDist)).sub(this.upVec.mul(this.scHeight)).toPoint();
+//		scRight = this.position.toVec().add(this.towardsVec.mul(this.scDist)).add(this.rightVec.mul(this.scWidth)).toPoin*/t();
+		
+		
+		scLeft = position.toVec().add(towardsVec.mul(scDist)).sub(rightVec.mul(scWidth)).toPoint();
 	}
 	
 	public double getScHeight() {
@@ -76,19 +78,19 @@ public class Camera {
 	}
 
 
-	public Point getScTop() {
-		return scTop;
-	}
-
-
-	public Point getScBottom() {
-		return scBottom;
-	}
-
-
-	public Point getScRight() {
-		return scRight;
-	}
+//	public Point getScTop() {
+//		return scTop;
+//	}
+//
+//
+//	public Point getScBottom() {
+//		return scBottom;
+//	}
+//
+//
+//	public Point getScRight() {
+//		return scRight;
+//	}
 
 
 	public Point getScLeft() {

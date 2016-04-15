@@ -23,12 +23,21 @@ public class Vector {
 	public Vector crossProduct(Vector other) {
 		
 		double x = point.getY() * other.point.getZ() - point.getZ() * other.point.getY();
-		double y = point.getZ() * other.point.getY() - point.getX() * other.point.getZ();
+		double y = point.getZ() * other.point.getX() - point.getX() * other.point.getZ();
 		double z = point.getX() * other.point.getY() - point.getY() * other.point.getX();
 		
 		return new Vector(x, y, z);
 	}
 	
+	public double dotProduct(Vector other) {
+		
+		double x = point.getX() * other.point.getX();
+		double y = point.getY() * other.point.getY();
+		double z = point.getZ() * other.point.getZ();
+		
+		return x + y + z;
+	}
+
 	public Vector normalize() {
 		double h = Math.sqrt(Math.pow(point.getX(), 2) + 
 							 Math.pow(point.getY(), 2) + 
