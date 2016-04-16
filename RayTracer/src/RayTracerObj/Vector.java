@@ -76,4 +76,8 @@ public class Vector {
 		
 		return new Vector(x, y, z);
 	}
+	
+	public String toString() {
+		return point.toString();
+	}
 }

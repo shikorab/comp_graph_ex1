@@ -14,11 +14,12 @@ public class Ray {
 	public Ray(Camera camera, double x, double y) {
 		double screenWidth = camera.getScWidth();
 		Vector rightVec = camera.getRightVec();
-		Vector right = rightVec.mul((x/screenWidth + 1) * screenWidth);
+		
+		double rightDist = (x/screenWidth + 1.0) * screenWidth;
+		Vector right = rightVec.mul(rightDist);
 		Vector up = camera.getUpVec().mul(y);
-		direction = camera.getScLeft().toVec().add(right).add(up).normalize();
-			
 		p0 = camera.getPosition();
+		direction = camera.getScLeft().toVec().sub(p0.toVec()).add(right).add(up).normalize();
 	}
 	
 	public Vector getVec() {

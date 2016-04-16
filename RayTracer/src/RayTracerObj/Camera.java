@@ -7,7 +7,7 @@ public class Camera {
 	private final Point lookAt;
 	private final double scDist;
 	private final double scWidth;
-	private double scHeight;
+	private double scHeight = 1;
 	
 	private Vector towardsVec;
 	private Vector lookAtVec;
@@ -43,7 +43,7 @@ public class Camera {
 		
 		/*Calc right vector*/
 		this.rightVec = this.towardsVec.crossProduct(this.upVec).normalize();
-
+		
 		/*Calc screen points*/
 //		scTop = this.position.toVec().add(this.towardsVec.mul(this.scDist)).add(this.upVec.mul(this.scHeight)).toPoint();/*
 //		scBottom = this.position.toVec().add(this.towardsVec.mul(this.scDist)).sub(this.upVec.mul(this.scHeight)).toPoint();

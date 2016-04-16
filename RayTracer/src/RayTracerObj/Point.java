@@ -64,4 +64,8 @@ public class Point {
 		return new Vector(this);
 	}
 	
+	public String toString() {
+		return Double.toString(getX()) + ", " + Double.toString(getY()) + ", " + Double.toString(getZ());
+	}
+	
 }

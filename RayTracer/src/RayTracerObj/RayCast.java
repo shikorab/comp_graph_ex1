@@ -73,8 +73,8 @@ public class RayCast {
 			for (int y = 0; y < imageHeight;y++) {
 				//Convert to screen coordinates
 				//i.e. shift zero point to middle of the screen and multiply according to screen image proportion; 
-				double scx = x/imageWidth * 2 * camera.getScWidth() - camera.getScWidth();
-				double scy = y/imageHeight * 2 * camera.getScHeight() - camera.getScHeight();
+				double scx = x/((double) imageWidth) * 2 * camera.getScWidth() - camera.getScWidth();
+				double scy = y/((double) imageHeight) * 2 * camera.getScHeight() - camera.getScHeight();
 				
 				//Create Ray
 				Ray ray = new Ray(camera, scx, scy);
