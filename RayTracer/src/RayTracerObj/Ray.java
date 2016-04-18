@@ -28,6 +28,11 @@ public class Ray {
 		p0 = src;
 	}
 	
+	public Ray(Point src, Vector direction) {
+		this.direction = direction;
+		p0 = src;
+	}
+	
 	public Vector getVec() {
 		return direction;
 	}

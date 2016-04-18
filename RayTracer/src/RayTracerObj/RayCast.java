@@ -110,7 +110,7 @@ public class RayCast {
 
 
 
-	private Intersection findIntersection(Ray ray, Scene scene) {
+	public static Intersection findIntersection(Ray ray, Scene scene) {
 		double minDistance = Double.MAX_VALUE;
 		Intersection minInter = null;
 		Point P0 = ray.getP0();
@@ -121,7 +121,7 @@ public class RayCast {
 			
 			Vector interVec = intersection.getPoint().toVec().sub(P0.toVec());
 			double distance = Math.sqrt(interVec.dotProduct(interVec));
-			if (distance < minDistance) {
+			if (distance != 0 && distance < minDistance) {
 				minDistance = distance;
 				minInter = intersection;
 			}

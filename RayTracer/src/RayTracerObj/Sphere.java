@@ -35,10 +35,10 @@ public class Sphere implements Surface{
 		
 		double thc = Math.sqrt(Math.pow(radius, 2) - dpow);
 		double t  = tca - thc;
-		if (t < 0) t = tca + thc; //part of the sphere behind us
+		if (t < 0)  return null;//FIXME: consider t = tca + thc; //part of the sphere behind us
 		
 		Point P = V.mul(t).add(P0.toVec()).toPoint();
-		return new Intersection(P, material);
+		return new Intersection(P, material, ray);
 	}
 
 }
