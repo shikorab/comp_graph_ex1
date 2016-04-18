@@ -2,10 +2,10 @@ package RayTracerObj;
 
 public class Light {
 	final private Point position;
-	final private Color light_color;
-	final private double specular_intesity;
-	final private double shadow_intesity;
-	final private double light_width;
+	final private Color lightColor;
+	final private double specularIntesity;
+	final private double shadowIntesity;
+	final private double lightWidth;
 
 	/**
 	 * This class represents light and its properties are: position, light_color, specular_intesity, shadow_intesity, light_width
@@ -22,10 +22,30 @@ public class Light {
 	public Light(double px, double py, double pz, double lr, double lg, double lb, double specular_intesity,
 			double shadow_intesity, double light_width) {
 		this.position = new Point(px, py, pz);
-		this.light_color = new Color(lr, lg, lb);
-		this.specular_intesity = specular_intesity;
-		this.shadow_intesity = shadow_intesity;
-		this.light_width = light_width;
+		this.lightColor = new Color(lr, lg, lb);
+		this.specularIntesity = specular_intesity;
+		this.shadowIntesity = shadow_intesity;
+		this.lightWidth = light_width;
+	}
+
+	public Point getPosition() {
+		return position;
+	}
+
+	public Color getLightColor() {
+		return lightColor;
+	}
+
+	public double getSpecularIntesity() {
+		return specularIntesity;
+	}
+
+	public double getShadowIntesity() {
+		return shadowIntesity;
+	}
+
+	public double getLightWidth() {
+		return lightWidth;
 	}
 
 }

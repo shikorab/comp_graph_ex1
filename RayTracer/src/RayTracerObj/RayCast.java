@@ -84,7 +84,10 @@ public class RayCast {
 				
 				//*Set pixel color
 				if (intersection != null) {
+					intersection.computeColor(scene);
 					setPixel(x, y, intersection.getColor());
+				} else {
+					setPixel(x, y, scene.set.getBackgroundColor());
 				}
 			}
 		}

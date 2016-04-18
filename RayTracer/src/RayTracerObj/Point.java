@@ -67,5 +67,13 @@ public class Point {
 	public String toString() {
 		return Double.toString(getX()) + ", " + Double.toString(getY()) + ", " + Double.toString(getZ());
 	}
+
+	public double distance(Point other) {
+		double x = getX() * other.getX();
+		double y = getY() * other.getY();
+		double z = getZ() * other.getZ();
+		
+		return Math.sqrt(x + y + z);
+	}
 	
 }

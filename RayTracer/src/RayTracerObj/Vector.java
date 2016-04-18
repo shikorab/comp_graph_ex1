@@ -10,7 +10,7 @@ package RayTracerObj;
  * wise for RGB color calculation)
  */
 public class Vector {
-	private Point point;
+	protected Point point;
 	
 	public Vector(Point point) {
 		this.point = point;
@@ -79,5 +79,13 @@ public class Vector {
 	
 	public String toString() {
 		return point.toString();
+	}
+
+	public Vector mul(Vector other) {
+		double x = (point.getX() * other.point.getX());
+		double y = (point.getY() * other.point.getY());
+		double z = (point.getZ() * other.point.getZ());
+		
+		return new Vector(x, y, z);		
 	}
 }

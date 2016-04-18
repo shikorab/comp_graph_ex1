@@ -1,14 +1,27 @@
 package RayTracerObj;
 
 public class Settings {
-	final private Color background_color;
-	final private double sh_rays;
-	final private double rec_max;
+	final private Color backgroundColor;
+	final private double shRays;
+	final private double recMax;
 
 	public Settings(double bgr, double bgg, double bgb, double sh_rays, double rec_max) {
-		this.background_color = new Color(bgr, bgg, bgb);
-		this.sh_rays = sh_rays;
-		this.rec_max = rec_max;
+		this.backgroundColor = new Color(bgr, bgg, bgb);
+		this.shRays = sh_rays;
+		this.recMax = rec_max;
 	}
+	
+	public Color getBackgroundColor() {
+		return backgroundColor.mul(256);
+	}
+
+	public double getShRays() {
+		return shRays;
+	}
+
+	public double getRecMax() {
+		return recMax;
+	}
+
 
 }

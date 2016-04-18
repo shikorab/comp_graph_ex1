@@ -215,6 +215,7 @@ public class RayTracer {
 					double light_width = Double.parseDouble(params[7]);
 					// Add code here to parse light parameters
 					Light light = new Light(px, py, pz, lr, lg, lb, specular_intesity, shadow_intesity, light_width);
+					scene.lightList.add(light);
 					System.out.println(String.format("Parsed light (line %d)", lineNum));
 				}
 				else

@@ -23,6 +23,11 @@ public class Ray {
 //		System.out.println(direction.toString());
 	}
 	
+	public Ray(Point src, Point dest) {
+		direction = dest.toVec().sub(src.toVec()).normalize();
+		p0 = src;
+	}
+	
 	public Vector getVec() {
 		return direction;
 	}
