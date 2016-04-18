@@ -10,7 +10,6 @@ public class Camera {
 	private double scHeight = 1;
 	
 	private Vector towardsVec;
-	private Vector lookAtVec;
 	private Vector upVec;
 	private Vector rightVec;
 	
@@ -29,9 +28,6 @@ public class Camera {
 		this.scWidth = sc_width;
 		
 		
-		/*look At vector*/
-		this.lookAtVec = this.getLookAt().toVec().normalize();
-		
 		/*towards vector*/
 		this.towardsVec = this.getPosition().toVec();
 		this.towardsVec = this.getLookAt().toVec().sub(this.towardsVec).normalize();
@@ -39,7 +35,7 @@ public class Camera {
 		/*up vector*/
 		this.upVec = this.getUp().toVec();
 		/*Fix up vector*/
-		this.upVec = this.towardsVec.crossProduct(this.upVec.crossProduct(this.towardsVec)).normalize();
+		//this.upVec = this.towardsVec.crossProduct(this.upVec.crossProduct(this.towardsVec)).normalize();
 		
 		/*Calc right vector*/
 		this.rightVec = this.towardsVec.crossProduct(this.upVec).normalize();
@@ -60,11 +56,6 @@ public class Camera {
 
 	public Vector getTowardsVec() {
 		return towardsVec;
-	}
-
-
-	public Vector getLookAtVec() {
-		return lookAtVec;
 	}
 
 

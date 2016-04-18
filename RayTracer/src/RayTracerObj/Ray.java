@@ -20,6 +20,7 @@ public class Ray {
 		Vector up = camera.getUpVec().mul(y);
 		p0 = camera.getPosition();
 		direction = camera.getScLeft().toVec().sub(p0.toVec()).add(right).add(up).normalize();
+//		System.out.println(direction.toString());
 	}
 	
 	public Vector getVec() {
