@@ -24,11 +24,12 @@ public class Plane implements Surface {
 		Point P0 = ray.getP0();
 		Vector V = ray.getVec();
 		
-		/*t = - (P0 . N + C) / (V . N) */
+		/*t = - (P0 . N - C) / (V . N) */
 		double vdotn = V.dotProduct(normal);
-		if (vdotn > 0) return null; /*no intersection*/
+		if (vdotn == 0) return null; /*no intersection*/
 		
-		double t = - (P0.toVec().dotProduct(normal) + offset) / (vdotn);
+		double t = - (P0.toVec().dotProduct(normal) - offset) / (vdotn);
+		if (t < 0) return null; /*the plane is behind us*/
 		Point p = P0.toVec().add(V.mul(t)).toPoint();
 		
 		return new Intersection(p, material);
