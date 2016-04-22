@@ -2,7 +2,7 @@ package RayTracerObj;
 
 import java.util.ArrayList;
 
-public class Intersection {
+public class Intersection implements Comparable<Intersection>{
 
 	public Material material;
 	public Point point;
@@ -76,6 +76,10 @@ public class Intersection {
 	
 	public Point getPoint() {
 		return point;
+	}
+	
+	public int compareTo(Intersection other){
+		return (int)((this.point).distance(this.ray.getP0()) - (other.point).distance(this.ray.getP0())); 
 	}
 
 }
