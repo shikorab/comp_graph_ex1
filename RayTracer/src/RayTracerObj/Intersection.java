@@ -1,6 +1,7 @@
 package RayTracerObj;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public class Intersection implements Comparable<Intersection>{
 
@@ -52,7 +53,7 @@ public class Intersection implements Comparable<Intersection>{
 			}
 			
 			/*in case not occluded - add to color*/
-			if (!occluded) {
+			{
 				
 				/*Calc diffuse color*/
 				Vector N = normal;
@@ -73,8 +74,12 @@ public class Intersection implements Comparable<Intersection>{
 				Color specularColor = Ks.mul(Math.pow(cosalpha, material.phongCoeff)).mul(Il);
 				color = color.add(specularColor);
 				
+				if (occluded) {
+					color = color.mul(light.getShadowIntesity());
+				}
+				
 				count = count + 1;
-			}	
+			}
 			color = color.mul(1 - material.transparency);
 			
 			/*emission*/
@@ -93,7 +98,7 @@ public class Intersection implements Comparable<Intersection>{
 				} else {
 					backgroundColor = scene.set.getBackgroundColor();
 				}
-					
+					       
 				color = color.add(backgroundColor.mul(material.transparency));
 			}
 			
@@ -115,7 +120,30 @@ public class Intersection implements Comparable<Intersection>{
 			color = color.add(reflectionColor);
 			
 			
-			/*shadow*/
+			
+			/*Soft shadow*/
+			Vector lightNormal = ray.getVec();
+			Point lightPoint  = light.getPosition();
+			double radious  = light.getLightWidth();
+			double n = scene.set.getShRays();
+			double nradious = radious / n;
+			Vector planeVecX = new Point(lightNormal.toPoint().getY(), - lightNormal.toPoint().getX(), 0).toVec().normalize();
+			Vector planeVecY = planeVecX.crossProduct(lightNormal).normalize();
+			int length = (int) Math.floor(Math.sqrt(n) / 2);
+			Random rand = new Random();
+			for (int i = -length; i < length; i++) {
+				for (int j = -length; j < length; j++) {
+					
+					double xdist = rand.nextDouble() * nradious + i * nradious;
+					double ydist = rand.nextDouble() * nradious + j * nradious;
+					
+					Point lightSoftShadowPoint = lightPoint.toVec().add(planeVecX.mul(xdist)).add(planeVecY.mul(ydist)).toPoint();
+					Ray softShadowRay = new Ray(lightSoftShadowPoint, point);
+					
+					
+					
+				}
+			}
 			
 		}
 	}
