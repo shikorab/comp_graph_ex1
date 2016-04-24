@@ -40,9 +40,9 @@ public class RayCast {
 	 * @param color
 	 */
 	public void setPixel(int x, int y, Color color) {
-		rgbData[(x + y * imageWidth)*3 + 0 /*red*/] = color.getRed();
-		rgbData[(x + y * imageWidth)*3 + 1 /*green*/] = color.getGreen();
-		rgbData[(x + y * imageWidth)*3 + 2 /*blue*/] = color.getBlue();
+		rgbData[(x + y * imageWidth)*3 + 0 /*red*/] = (byte) (255 * color.getRed());
+		rgbData[(x + y * imageWidth)*3 + 1 /*green*/] = (byte) (255 * color.getGreen());
+		rgbData[(x + y * imageWidth)*3 + 2 /*blue*/] = (byte) (255 * color.getBlue());
 	}
 
 	public Color getPixel(int x, int y) {
@@ -73,18 +73,18 @@ public class RayCast {
 			for (int y = 0; y < imageHeight;y++) {
 				//Convert to screen coordinates
 				//i.e. shift zero point to middle of the screen and multiply according to screen image proportion; 
-				double scx = - x/((double) imageWidth) * 2 * camera.getScWidth() + camera.getScWidth();
-				double scy = - y/((double) imageHeight) * 2 * camera.getScHeight() + camera.getScHeight();
+				double scx = (- x/((double) imageWidth)  +  0.5) * camera.getScWidth();
+				double scy = (- y/((double) imageHeight)  + 0.5) *  camera.getScHeight();
 				
 				//Create Ray
 				Ray ray = new Ray(camera, scx, scy);
 				
 				//Find the relevant intersection
-				Intersection intersection = findIntersection(ray, scene);
+				Intersection intersection = findIntersection(ray, scene, null);
 				
 				//*Set pixel color
 				if (intersection != null) {
-					intersection.computeColor(scene);
+					intersection.computeColor(scene, 0);
 					setPixel(x, y, intersection.getColor());
 				} else {
 					setPixel(x, y, scene.set.getBackgroundColor());
@@ -110,12 +110,13 @@ public class RayCast {
 
 
 
-	public static Intersection findIntersection(Ray ray, Scene scene) {
+	public static Intersection findIntersection(Ray ray, Scene scene, Surface current) {
 		double minDistance = Double.MAX_VALUE;
 		Intersection minInter = null;
 		Point P0 = ray.getP0();
 		
 		for (Surface surface: scene) {
+			if (surface == current) continue;
 			Intersection intersection = surface.getIntersection(ray);
 			if (intersection == null) continue; //No intersection
 			

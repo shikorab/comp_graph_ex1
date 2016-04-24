@@ -38,7 +38,7 @@ public class Sphere implements Surface{
 		if (t < 0)  return null;//FIXME: consider t = tca + thc; //part of the sphere behind us
 		
 		Point P = V.mul(t).add(P0.toVec()).toPoint();
-		return new Intersection(P, material, ray);
+		return new Intersection(P, material, ray, this);
 	}
 
 }

@@ -17,16 +17,16 @@ public class Color{
 		vec = vector;
 	}
 	
-	public byte getBlue() {
-		return (byte) vec.toPoint().getZ();
+	public double getBlue() {
+		return vec.toPoint().getZ();
 	}
 	
-	public byte getRed() {
-		return (byte) vec.toPoint().getX();
+	public double getRed() {
+		return vec.toPoint().getX();
 	}
 	
-	public byte getGreen() {
-		return (byte) vec.toPoint().getY();
+	public double getGreen() {
+		return vec.toPoint().getY();
 	}
 	
 	public Color mul(double i) {

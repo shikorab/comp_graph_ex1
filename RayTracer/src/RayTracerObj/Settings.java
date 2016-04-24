@@ -12,7 +12,7 @@ public class Settings {
 	}
 	
 	public Color getBackgroundColor() {
-		return backgroundColor.mul(256);
+		return backgroundColor;
 	}
 
 	public double getShRays() {

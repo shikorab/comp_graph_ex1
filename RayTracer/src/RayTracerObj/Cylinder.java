@@ -77,7 +77,7 @@ public class Cylinder implements Surface {
 		Collections.sort(intersections);
 		
 		/* Get the minimal intersection point */
-		return new Intersection(intersections.get(0).getPoint(), intersections.get(0).material, ray);
+		return new Intersection(intersections.get(0).getPoint(), intersections.get(0).material, ray, this);
 	}
 	
 	/**

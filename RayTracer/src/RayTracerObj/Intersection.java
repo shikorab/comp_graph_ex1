@@ -7,15 +7,17 @@ public class Intersection implements Comparable<Intersection>{
 	public Material material;
 	public Point point;
 	public Color color;
-	private Ray ray;
+	public Ray ray;
+	public Surface current;
 	
-	public Intersection(Point p, Material material, Ray ray) {
+	public Intersection(Point p, Material material, Ray ray, Surface current) {
 		point = p;
 		this.material = material;
 		this.ray = ray;
+		this.current = current;
 	}
 	
-	public void computeColor(Scene scene) {
+	public void computeColor(Scene scene, int depth) {
 		color = new Color(0, 0, 0);
 		
 		ArrayList<Light> lights = scene.lightList;
@@ -52,18 +54,18 @@ public class Intersection implements Comparable<Intersection>{
 				count = count + 1;
 			}
 		}	
-		color = color.mul(255 / count).mul(1 - material.transparency);
-		
+		color = color.mul(1.0 / count).mul(1 - material.transparency);
+
 		if (material.transparency > 0 ) { /* transparent or partially transparent*/ 
 			/*look for next intersection*/
 			Color backgroundColor;
 			Ray newray = new Ray(point, ray.getVec());
-			Intersection background = RayCast.findIntersection(newray, scene);
-			if (false && background != null) {
-				background.computeColor(scene);
+			Intersection background = RayCast.findIntersection(newray, scene, current);
+			if (background != null) {
+				background.computeColor(scene, depth);
 				backgroundColor = background.getColor();
 			} else {
-				backgroundColor = scene.set.getBackgroundColor().mul(255);
+				backgroundColor = scene.set.getBackgroundColor();
 			}
 			
 			color = color.add(backgroundColor.mul(material.transparency));
