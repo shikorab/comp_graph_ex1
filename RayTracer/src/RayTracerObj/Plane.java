@@ -32,7 +32,12 @@ public class Plane implements Surface {
 		if (t < 0) return null; /*the plane is behind us*/
 		Point p = P0.toVec().add(V.mul(t)).toPoint();
 		
-		return new Intersection(p, material, ray, this);
+		return new Intersection(p, material, ray, this, this.getNormal());
+	}
+
+	
+	public Vector getNormal() {
+		return normal.normalize();
 	}
 
 }

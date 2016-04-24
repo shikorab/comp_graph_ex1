@@ -38,7 +38,11 @@ public class Sphere implements Surface{
 		if (t < 0)  return null;//FIXME: consider t = tca + thc; //part of the sphere behind us
 		
 		Point P = V.mul(t).add(P0.toVec()).toPoint();
-		return new Intersection(P, material, ray, this);
+		return new Intersection(P, material, ray, this, this.getNormal(P));
+	}
+
+	public Vector getNormal(Point p) {		
+		return p.toVec().sub(center.toVec()).normalize();
 	}
 
 }

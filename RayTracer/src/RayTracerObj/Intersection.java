@@ -9,16 +9,21 @@ public class Intersection implements Comparable<Intersection>{
 	public Color color;
 	public Ray ray;
 	public Surface current;
+	public Vector normal;
 	
-	public Intersection(Point p, Material material, Ray ray, Surface current) {
+	public Intersection(Point p, Material material, Ray ray, Surface current, Vector normal) {
 		point = p;
 		this.material = material;
 		this.ray = ray;
 		this.current = current;
+		this.normal = normal;
 	}
 	
 	public void computeColor(Scene scene, int depth) {
+		Ray newray = new Ray(point, ray.getVec());
+		
 		color = new Color(0, 0, 0);
+		
 		
 		ArrayList<Light> lights = scene.lightList;
 		int count = 0;
@@ -45,6 +50,11 @@ public class Intersection implements Comparable<Intersection>{
 			
 			/*in case not occluded - add to color*/
 			if (!occluded) {
+				
+				Vector N = normal;
+				
+				/*Diffuse Color*/
+				
 				Color addedColor = 
 						material.specularColor.
 						mul(light.getSpecularIntesity()).
@@ -59,7 +69,6 @@ public class Intersection implements Comparable<Intersection>{
 		if (material.transparency > 0 ) { /* transparent or partially transparent*/ 
 			/*look for next intersection*/
 			Color backgroundColor;
-			Ray newray = new Ray(point, ray.getVec());
 			Intersection background = RayCast.findIntersection(newray, scene, current);
 			if (background != null) {
 				background.computeColor(scene, depth);
@@ -82,6 +91,10 @@ public class Intersection implements Comparable<Intersection>{
 	
 	public int compareTo(Intersection other){
 		return (int)((this.point).distance(this.ray.getP0()) - (other.point).distance(this.ray.getP0())); 
+	}
+
+	public Vector getNormal() {
+		return normal;
 	}
 
 }
