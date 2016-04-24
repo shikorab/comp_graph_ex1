@@ -28,124 +28,184 @@ public class Intersection implements Comparable<Intersection>{
 		}
 		
 		ArrayList<Light> lights = scene.lightList;
-		int count = 0;
 		for (Light light: lights) {
-			/*Calc Ray and distance from light to point*/
+			
+			Color curColor = new Color(0, 0, 0);
 			Ray  lightRay = new Ray(light.getPosition(), point);
-			double distance = point.distance(light.getPosition());
+			boolean occluded = isOccluded(lightRay, scene);
 			
-			/*Check if occluded by any other surface*/
-			/*Assume not occluded*/
-			boolean occluded = false;
-			for (Surface surface: scene) {
-				if (surface == current) continue;
-				
-				Intersection intersection = surface.getIntersection(lightRay);
-				if (intersection == null) continue; //No intersection
-				
-				/*Check if occluded*/
-				Vector interVec = intersection.getPoint().toVec().sub(light.getPosition().toVec());
-				double distance2 = Math.sqrt(interVec.dotProduct(interVec));
-				if (distance > distance2) {
-					occluded = true;
-					break;
-				}
-			}
+			Color diffuseColor = getDiffuseColor(light);
+			curColor = curColor.add(diffuseColor);
 			
-			/*in case not occluded - add to color*/
-			{
-				
-				/*Calc diffuse color*/
-				Vector N = normal;
-				Color Kd = material.diffuseColor;
-				Vector L = light.getPosition().toVec().sub(point.toVec()).normalize();
-				Vector V = ray.getVec();
-				
-				double costeta = N.dotProduct(L);
-				Color Il = light.getLightColor();
-				Color diffuseColor = Kd.mul(costeta).mul(Il);
-				color = color.add(diffuseColor);
-				
-				/*Calc specular color*/
-				Color Ks = material.specularColor;
-				Vector Rm = N.mul(2 * (L.dotProduct(N))).sub(L);
-				double cosalpha = V.dotProduct(Rm);
-				
-				Color specularColor = Ks.mul(Math.pow(cosalpha, material.phongCoeff)).mul(Il);
-				color = color.add(specularColor);
-				
+			Color specularColor = getSpecularColor(light);
+			curColor = curColor.add(specularColor);
+			
+			/*Take into account hard shadow intensity - in case point occluded*/
+			if (scene.set.getShRays() == 1) {
 				if (occluded) {
-					color = color.mul(light.getShadowIntesity());
+					curColor = curColor.mul( 1 - light.getShadowIntesity());
 				}
-				
-				count = count + 1;
-			}
-			color = color.mul(1 - material.transparency);
-			
-			/*emission*/
-			
-			/*ambient*/
-			
-			/*transparency*/
-			if (material.transparency > 0 ) { /* transparent or partially transparent*/ 
-				Ray newray = new Ray(point, ray.getVec());
-				/*look for next intersection*/
-				Color backgroundColor;
-				Intersection background = RayCast.findIntersection(newray, scene, current);
-				if (background != null) {
-					background.computeColor(scene, depth + 1);
-					backgroundColor = background.getColor();
-				} else {
-					backgroundColor = scene.set.getBackgroundColor();
-				}
-					       
-				color = color.add(backgroundColor.mul(material.transparency));
-			}
-			
-			
-			/*reflection*/
-			Vector V = ray.getVec();
-			Vector N = normal;
-			Vector R = V.sub(N.mul(2 * (V.dotProduct(N)))).normalize();
-			Ray reflactionRay = new Ray(point, R);
-			Intersection background = RayCast.findIntersection(reflactionRay, scene, current);
-			Color backgroundColor;
-			if (background != null) {
-				background.computeColor(scene, depth + 1);
-				backgroundColor = background.getColor();
 			} else {
-				backgroundColor = scene.set.getBackgroundColor();
-			}
-			Color reflectionColor = material.reflectionColor.mul(backgroundColor);
-			color = color.add(reflectionColor);
-			
-			
-			
-			/*Soft shadow*/
-			Vector lightNormal = ray.getVec();
-			Point lightPoint  = light.getPosition();
-			double radious  = light.getLightWidth();
-			double n = scene.set.getShRays();
-			double nradious = radious / n;
-			Vector planeVecX = new Point(lightNormal.toPoint().getY(), - lightNormal.toPoint().getX(), 0).toVec().normalize();
-			Vector planeVecY = planeVecX.crossProduct(lightNormal).normalize();
-			int length = (int) Math.floor(Math.sqrt(n) / 2);
-			Random rand = new Random();
-			for (int i = -length; i < length; i++) {
-				for (int j = -length; j < length; j++) {
-					
-					double xdist = rand.nextDouble() * nradious + i * nradious;
-					double ydist = rand.nextDouble() * nradious + j * nradious;
-					
-					Point lightSoftShadowPoint = lightPoint.toVec().add(planeVecX.mul(xdist)).add(planeVecY.mul(ydist)).toPoint();
-					Ray softShadowRay = new Ray(lightSoftShadowPoint, point);
-					
-					
-					
-				}
+				double softShadowCoeff = getSoftShadowCoeff(light, scene);
+				curColor = curColor.mul(softShadowCoeff);
 			}
 			
+			color = color.add(curColor);
 		}
+		/*Take into account transparency coeff*/
+		color = color.mul(1 - material.transparency);
+			
+			
+		/*transparency*/
+		if (material.transparency > 0 ) { /* transparent or partially transparent*/ 
+			Color transColor = calcTransColor(scene, depth);
+			color = color.add(transColor.mul(material.transparency));
+		}
+		
+		
+		/*reflection*/
+		Color reflectColor = calcReflectColor(scene, depth);
+		color = color.add(reflectColor);
+		
+	}
+
+	private Color calcReflectColor(Scene scene, int depth) {
+		Vector V = ray.getVec();
+		Vector N = normal;
+		Vector R = V.sub(N.mul(2 * (V.dotProduct(N)))).normalize();
+		Ray reflactionRay = new Ray(point, R);
+		Intersection background = RayCast.findIntersection(reflactionRay, scene, current);
+		Color backgroundColor;
+		if (background != null) {
+			background.computeColor(scene, depth + 1);
+			backgroundColor = background.getColor();
+		} else {
+			backgroundColor = scene.set.getBackgroundColor();
+		}
+		Color reflectionColor = material.reflectionColor.mul(backgroundColor);
+		return reflectionColor;
+	}
+
+	private Color calcTransColor(Scene scene, int depth) {
+		Ray transRay = new Ray(point, ray.getVec());
+		/*look for next intersection*/
+		Color backgroundColor;
+		Intersection background = RayCast.findIntersection(transRay, scene, current);
+		if (background != null) {
+			background.computeColor(scene, depth + 1);
+			backgroundColor = background.getColor();
+		} else {
+			backgroundColor = scene.set.getBackgroundColor();
+		}
+			       
+		return backgroundColor;
+	}
+
+	private double getSoftShadowCoeff(Light light, Scene scene) {
+		/*Soft shadow*/
+		Vector lightNormal = ray.getVec();
+		Point lightPoint  = light.getPosition();
+		double radious  = light.getLightWidth();
+		double n = scene.set.getShRays();
+		double nradious = radious / n;
+		Vector planeVecX = new Point(lightNormal.toPoint().getY(), - lightNormal.toPoint().getX(), 0).toVec().normalize();
+		Vector planeVecY = planeVecX.crossProduct(lightNormal).normalize();
+		int length = (int) Math.floor(Math.sqrt(n) / 2);
+		Random rand = new Random();
+		int occludedCount = 0;
+		int totalCount = 0;
+		for (int i = -length; i < length; i++) {
+			for (int j = -length; j < length; j++) {
+				
+				double xdist = rand.nextDouble() * nradious + i * nradious;
+				double ydist = rand.nextDouble() * nradious + j * nradious;
+				
+				Point lightSoftShadowPoint = lightPoint.toVec().add(planeVecX.mul(xdist)).add(planeVecY.mul(ydist)).toPoint();
+				Ray softShadowRay = new Ray(lightSoftShadowPoint, point);
+				
+				boolean occluded  = isOccluded(softShadowRay, scene);
+				if (!occluded) { 
+					occludedCount++;
+				}
+				totalCount++;
+			}
+		}
+		
+		return (double) (occludedCount) / (double) (totalCount);
+	}
+
+	/**
+	 *  Calc the specular color for a given light in the intersection
+	 * @param light
+	 * @return
+	 */
+	private Color getSpecularColor(Light light) {
+		/*Calc diffuse color*/
+		Vector N = normal;
+		Vector L = light.getPosition().toVec().sub(point.toVec()).normalize();
+		Vector V = ray.getVec();
+		Color Il = light.getLightColor();
+		
+		/*Calc specular color*/
+		Color Ks = material.specularColor;
+		Vector Rm = N.mul(2 * (L.dotProduct(N))).sub(L);
+		double cosalpha = V.dotProduct(Rm);
+		
+		Color specularColor = Ks.mul(Math.pow(cosalpha, material.phongCoeff)).mul(Il);
+		return specularColor;
+	}
+
+	/**
+	 * Calc the diffuse color in the relevant intersection for a given light
+	 * @param light
+	 * @return
+	 */
+	private Color getDiffuseColor(Light light) {
+		/*Calc diffuse color*/
+		Vector N = normal;
+		Color Kd = material.diffuseColor;
+		Vector L = light.getPosition().toVec().sub(point.toVec()).normalize();
+		
+		double costeta = N.dotProduct(L);
+		Color Il = light.getLightColor();
+		Color diffuseColor = Kd.mul(costeta).mul(Il);
+		
+		return diffuseColor;
+	}
+
+	/**
+	 * Given light Ray and point return true iff the point is occluded by another surface.
+	 * @param lightRay
+	 * @param point
+	 * @return
+	 */
+	private boolean isOccluded(Ray lightRay, Scene scene) {
+		/*Calc Ray and distance from light to point*/
+		boolean distPos;
+		double distance = point.toVec().dotProduct(lightRay.getP0().toVec());
+		distPos = distance > 0;
+		
+		/*Check if occluded by any other surface*/
+		/*Assume not occluded*/
+		boolean occluded = false;
+		for (Surface surface: scene) {
+			if (surface == current) continue;
+			
+			Intersection intersection = surface.getIntersection(lightRay);
+			if (intersection == null) continue; //No intersection
+			
+			/*Check if occluded*/
+			double distance2 = intersection.getPoint().toVec().dotProduct(lightRay.getP0().toVec());
+			if (distPos && distance2 < 0) continue;
+			if (!distPos && distance2 > 0) continue;
+			
+			if (Math.abs(distance) > Math.abs(distance2)) {
+				occluded = true;
+				break;
+			}
+		}
+		
+		return occluded;
 	}
 
 	public Color getColor() {
