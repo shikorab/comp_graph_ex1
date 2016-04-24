@@ -20,23 +20,26 @@ public class Intersection implements Comparable<Intersection>{
 	}
 	
 	public void computeColor(Scene scene, int depth) {
-		Ray newray = new Ray(point, ray.getVec());
-		
 		color = new Color(0, 0, 0);
-		
+		if (depth > scene.set.getRecMax()) {
+			color = scene.set.getBackgroundColor();
+			return;
+		}
 		
 		ArrayList<Light> lights = scene.lightList;
 		int count = 0;
 		for (Light light: lights) {
 			/*Calc Ray and distance from light to point*/
-			Ray  ray = new Ray(light.getPosition(), point);
+			Ray  lightRay = new Ray(light.getPosition(), point);
 			double distance = point.distance(light.getPosition());
 			
 			/*Check if occluded by any other surface*/
 			/*Assume not occluded*/
 			boolean occluded = false;
 			for (Surface surface: scene) {
-				Intersection intersection = surface.getIntersection(ray);
+				if (surface == current) continue;
+				
+				Intersection intersection = surface.getIntersection(lightRay);
 				if (intersection == null) continue; //No intersection
 				
 				/*Check if occluded*/
@@ -51,33 +54,69 @@ public class Intersection implements Comparable<Intersection>{
 			/*in case not occluded - add to color*/
 			if (!occluded) {
 				
+				/*Calc diffuse color*/
 				Vector N = normal;
+				Color Kd = material.diffuseColor;
+				Vector L = light.getPosition().toVec().sub(point.toVec()).normalize();
+				Vector V = ray.getVec();
 				
-				/*Diffuse Color*/
+				double costeta = N.dotProduct(L);
+				Color Il = light.getLightColor();
+				Color diffuseColor = Kd.mul(costeta).mul(Il);
+				color = color.add(diffuseColor);
 				
-				Color addedColor = 
-						material.specularColor.
-						mul(light.getSpecularIntesity()).
-						add(material.diffuseColor).
-						mul(light.getLightColor());
-				color = color.add(addedColor);
+				/*Calc specular color*/
+				Color Ks = material.specularColor;
+				Vector Rm = N.mul(2 * (L.dotProduct(N))).sub(L);
+				double cosalpha = V.dotProduct(Rm);
+				
+				Color specularColor = Ks.mul(Math.pow(cosalpha, material.phongCoeff)).mul(Il);
+				color = color.add(specularColor);
+				
 				count = count + 1;
+			}	
+			color = color.mul(1 - material.transparency);
+			
+			/*emission*/
+			
+			/*ambient*/
+			
+			/*transparency*/
+			if (material.transparency > 0 ) { /* transparent or partially transparent*/ 
+				Ray newray = new Ray(point, ray.getVec());
+				/*look for next intersection*/
+				Color backgroundColor;
+				Intersection background = RayCast.findIntersection(newray, scene, current);
+				if (background != null) {
+					background.computeColor(scene, depth + 1);
+					backgroundColor = background.getColor();
+				} else {
+					backgroundColor = scene.set.getBackgroundColor();
+				}
+					
+				color = color.add(backgroundColor.mul(material.transparency));
 			}
-		}	
-		color = color.mul(1.0 / count).mul(1 - material.transparency);
-
-		if (material.transparency > 0 ) { /* transparent or partially transparent*/ 
-			/*look for next intersection*/
+			
+			
+			/*reflection*/
+			Vector V = ray.getVec();
+			Vector N = normal;
+			Vector R = V.sub(N.mul(2 * (V.dotProduct(N)))).normalize();
+			Ray reflactionRay = new Ray(point, R);
+			Intersection background = RayCast.findIntersection(reflactionRay, scene, current);
 			Color backgroundColor;
-			Intersection background = RayCast.findIntersection(newray, scene, current);
 			if (background != null) {
-				background.computeColor(scene, depth);
+				background.computeColor(scene, depth + 1);
 				backgroundColor = background.getColor();
 			} else {
 				backgroundColor = scene.set.getBackgroundColor();
 			}
+			Color reflectionColor = material.reflectionColor.mul(backgroundColor);
+			color = color.add(reflectionColor);
 			
-			color = color.add(backgroundColor.mul(material.transparency));
+			
+			/*shadow*/
+			
 		}
 	}
 
