@@ -44,7 +44,7 @@ public class Cylinder implements Surface {
 			if (i1 != null)
 				/* The intersection point is not in the cylinder */
 				if (i1.getPoint().distance(upCenterV.toPoint()) <= this.radius){
-					System.out.println("point1");
+					//System.out.println("point1");
 					intersections.add(i1);
 				}
 		}
@@ -54,7 +54,7 @@ public class Cylinder implements Surface {
 			if (i2 != null)
 				/* The intersection point is not in the cylinder */
 				if (i2.getPoint().distance(downCenterV.toPoint()) <= this.radius){
-					System.out.println("point2");
+					//System.out.println("point2");
 					intersections.add(i2);
 				}	
 		}
@@ -64,7 +64,7 @@ public class Cylinder implements Surface {
 		if (sphr != null){
 			Intersection i3 = sphr.getIntersection(ray);
 			if (i3 != null){
-				System.out.println("point3");
+				//System.out.println("point3");
 				intersections.add(i3);
 			}
 		}
