@@ -41,15 +41,15 @@ public class Intersection implements Comparable<Intersection>{
 			
 			/*Take into account hard shadow intensity - in case point occluded*/
 			if (scene.set.getShRays() == 1) {
-				boolean occluded = isOccluded(lightRay, scene);
-				if (occluded) {
-					curColor = curColor.mul( 1 - light.getShadowIntesity());
-				}
+//				boolean occluded = isOccluded(lightRay, scene);
+//				if (occluded) {
+//					curColor = curColor.mul( 1 - light.getShadowIntesity());
+//				}
 			} else {
 				double softShadowCoeff = getSoftShadowCoeff(light, scene);
-				curColor = curColor.mul(softShadowCoeff);
+				//curColor = curColor.mul(softShadowCoeff);
 				if (softShadowCoeff < 1) {
-					curColor = curColor.mul(1 - light.getShadowIntesity());
+					curColor = curColor.mul((1 - light.getShadowIntesity()) + softShadowCoeff*light.getShadowIntesity());
 				}	
 			}
 			
@@ -75,7 +75,10 @@ public class Intersection implements Comparable<Intersection>{
 	private Color calcReflectColor(Scene scene, int depth) {
 		Vector V = ray.getVec();
 		Vector N = normal;
-		Vector R = V.sub(N.mul(2.0 * (V.dotProduct(N)))).normalize();
+		double costeta = V.dotProduct(N);
+		if (costeta >= 0) return new Color(0, 0, 0);
+		
+		Vector R = V.sub(N.mul(2.0 * (costeta))).normalize();
 		Ray reflactionRay = new Ray(point, R);
 		Intersection background = RayCast.findIntersection(reflactionRay, scene, current);
 		Color backgroundColor;
@@ -115,7 +118,7 @@ public class Intersection implements Comparable<Intersection>{
 		Vector planeVecY = lightNormal.crossProduct(planeVecX).normalize();
 		int length = (int) Math.floor(n / 2);
 		Random rand = new Random();
-		int occludedCount = 0;
+		double intensityCount = 0;
 		int totalCount = 0;
 		for (int i = -length; i <= length; i++) {
 			for (int j = -length; j <= length; j++) {
@@ -126,15 +129,14 @@ public class Intersection implements Comparable<Intersection>{
 				Point lightSoftShadowPoint = lightPoint.toVec().add(planeVecX.mul(xdist)).add(planeVecY.mul(ydist)).toPoint();
 				Ray softShadowRay = new Ray(lightSoftShadowPoint, point);
 				
-				boolean occluded  = isOccluded(softShadowRay, scene);
-				if (occluded) { 
-					occludedCount++;
-				}
+				double intensity  = isOccluded(softShadowRay, scene);
+				intensityCount += intensity;
+				
 				totalCount++;
 			}
 		}
 		
-		return 1.0 - ((double) occludedCount) / ((double) totalCount);
+		return ((double) intensityCount) / ((double) totalCount);
 	}
 
 	/**
@@ -146,13 +148,16 @@ public class Intersection implements Comparable<Intersection>{
 		/*Calc diffuse color*/
 		Vector N = normal;
 		Vector L = light.getPosition().toVec().sub(point.toVec()).normalize();
-		Vector V = ray.getVec();
+		Vector V = ray.getVec().mul(-1);
 		Color Il = light.getLightColor();
 		
 		/*Calc specular color*/
 		Color Ks = material.specularColor;
-		Vector Rm = N.mul(2 * (L.dotProduct(N))).sub(L);
+		double costeta = L.dotProduct(N);
+		if (costeta <= 0) return new Color(0,0,0);
+		Vector Rm = N.mul(2 * (costeta)).sub(L);
 		double cosalpha = V.dotProduct(Rm);
+		if (cosalpha < 0) cosalpha = 0;
 		
 		Color specularColor = Ks.mul(Math.pow(cosalpha, material.phongCoeff)).mul(Il).mul(light.getSpecularIntesity());
 		return specularColor;
@@ -170,6 +175,7 @@ public class Intersection implements Comparable<Intersection>{
 		Vector L = light.getPosition().toVec().sub(point.toVec()).normalize();
 		
 		double costeta = N.dotProduct(L);
+		if (costeta < 0) costeta = 0;
 		Color Il = light.getLightColor();
 		Color diffuseColor = Kd.mul(costeta).mul(Il);
 		
@@ -182,13 +188,13 @@ public class Intersection implements Comparable<Intersection>{
 	 * @param point
 	 * @return
 	 */
-	private boolean isOccluded(Ray lightRay, Scene scene) {
+	private double isOccluded(Ray lightRay, Scene scene) {
 		/*Calc Ray and distance from light to point*/
 		double distance = point.distance(lightRay.getP0());
 		
 		/*Check if occluded by any other surface*/
 		/*Assume not occluded*/
-		boolean occluded = false;
+		double intensity = 1;
 		for (Surface surface: scene) {
 			if (surface == current) continue;
 			
@@ -199,12 +205,11 @@ public class Intersection implements Comparable<Intersection>{
 			double distance2 = intersection.getPoint().distance(lightRay.getP0());
 			
 			if (distance > distance2) {
-				occluded = true;
-				break;
+				intensity *= intersection.material.transparency;
 			}
 		}
 		
-		return occluded;
+		return intensity;
 	}
 
 	public Color getColor() {
