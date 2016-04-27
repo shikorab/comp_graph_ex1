@@ -40,9 +40,9 @@ public class RayCast {
 	 * @param color
 	 */
 	public void setPixel(int x, int y, Color color) {
-		rgbData[(x + y * imageWidth)*3 + 0 /*red*/] = (byte) (255 * color.getRed());
-		rgbData[(x + y * imageWidth)*3 + 1 /*green*/] = (byte) (255 * color.getGreen());
-		rgbData[(x + y * imageWidth)*3 + 2 /*blue*/] = (byte) (255 * color.getBlue());
+		rgbData[(x + y * imageWidth)*3 + 0 /*red*/] = (byte) (Math.min(255 * color.getRed(), 255));
+		rgbData[(x + y * imageWidth)*3 + 1 /*green*/] = (byte) (Math.min(255 * color.getGreen(), 255));
+		rgbData[(x + y * imageWidth)*3 + 2 /*blue*/] = (byte) (Math.min(255 * color.getBlue(), 255));
 	}
 
 	public Color getPixel(int x, int y) {

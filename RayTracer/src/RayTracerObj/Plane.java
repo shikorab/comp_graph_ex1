@@ -14,7 +14,7 @@ public class Plane implements Surface {
 	 * @param material
 	 */
 	public Plane(double nx, double ny, double nz, double offset, Material material) {
-		this.normal = new Vector(nx, ny, nz);
+		this.normal = new Vector(nx, ny, nz).normalize();
 		this.offset = offset;
 		this.material = material;
 	}
@@ -32,12 +32,14 @@ public class Plane implements Surface {
 		if (t < 0) return null; /*the plane is behind us*/
 		Point p = P0.toVec().add(V.mul(t)).toPoint();
 		
-		return new Intersection(p, material, ray, this, this.getNormal());
+		return new Intersection(p, material, ray, this, this.getNormal(V));
 	}
 
 	
-	public Vector getNormal() {
-		return normal.normalize();
+	public Vector getNormal(Vector v) {
+		if (v.dotProduct(normal) < 0)
+			return normal;
+		return normal.mul(-1);
 	}
 
 }

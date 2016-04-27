@@ -22,7 +22,7 @@ public class Intersection implements Comparable<Intersection>{
 	
 	public void computeColor(Scene scene, int depth) {
 		color = new Color(0, 0, 0);
-		if (depth > scene.set.getRecMax()) {
+		if (depth >= scene.set.getRecMax()) {
 			color = scene.set.getBackgroundColor();
 			return;
 		}
@@ -39,19 +39,11 @@ public class Intersection implements Comparable<Intersection>{
 			Color specularColor = getSpecularColor(light);
 			curColor = curColor.add(specularColor);
 			
-			/*Take into account hard shadow intensity - in case point occluded*/
-			if (scene.set.getShRays() == 1) {
-//				boolean occluded = isOccluded(lightRay, scene);
-//				if (occluded) {
-//					curColor = curColor.mul( 1 - light.getShadowIntesity());
-//				}
-			} else {
-				double softShadowCoeff = getSoftShadowCoeff(light, scene);
-				//curColor = curColor.mul(softShadowCoeff);
-				if (softShadowCoeff < 1) {
-					curColor = curColor.mul((1 - light.getShadowIntesity()) + softShadowCoeff*light.getShadowIntesity());
-				}	
-			}
+			/*Take into account soft shadow intensity - in case point occluded*/
+			double softShadowCoeff = getSoftShadowCoeff(light, scene);
+			if (softShadowCoeff < 1) {
+				curColor = curColor.mul((1 - light.getShadowIntesity()) + softShadowCoeff*light.getShadowIntesity());
+			}	
 			
 			color = color.add(curColor);
 		}
@@ -76,7 +68,7 @@ public class Intersection implements Comparable<Intersection>{
 		Vector V = ray.getVec();
 		Vector N = normal;
 		double costeta = V.dotProduct(N);
-		if (costeta >= 0) return new Color(0, 0, 0);
+		if (costeta >= 0) return scene.set.getBackgroundColor().mul(material.reflectionColor);
 		
 		Vector R = V.sub(N.mul(2.0 * (costeta))).normalize();
 		Ray reflactionRay = new Ray(point, R);
