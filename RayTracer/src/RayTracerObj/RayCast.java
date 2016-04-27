@@ -120,8 +120,8 @@ public class RayCast {
 			Intersection intersection = surface.getIntersection(ray);
 			if (intersection == null) continue; //No intersection
 			
-			Vector interVec = intersection.getPoint().toVec().sub(P0.toVec());
-			double distance = Math.sqrt(interVec.dotProduct(interVec));
+			
+			double distance = intersection.getPoint().distance(P0);
 			if (distance != 0 && distance < minDistance) {
 				minDistance = distance;
 				minInter = intersection;

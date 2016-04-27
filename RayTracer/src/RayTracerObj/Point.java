@@ -69,9 +69,9 @@ public class Point {
 	}
 
 	public double distance(Point other) {
-		double x = Math.abs(getX() * other.getX());
-		double y = Math.abs(getY() * other.getY());
-		double z = Math.abs(getZ() * other.getZ());
+		double x = Math.pow(getX() - other.getX(), 2);
+		double y = Math.pow(getY() - other.getY(), 2);
+		double z = Math.pow(getZ() - other.getZ(), 2);
 		
 		return Math.sqrt(x + y + z);
 	}
