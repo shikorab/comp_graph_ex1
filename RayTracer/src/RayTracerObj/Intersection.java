@@ -31,7 +31,6 @@ public class Intersection implements Comparable<Intersection>{
 		for (Light light: lights) {
 			
 			Color curColor = new Color(0, 0, 0);
-			Ray  lightRay = new Ray(light.getPosition(), point);
 			
 			Color diffuseColor = getDiffuseColor(light);
 			curColor = curColor.add(diffuseColor);
@@ -40,10 +39,18 @@ public class Intersection implements Comparable<Intersection>{
 			curColor = curColor.add(specularColor);
 			
 			/*Take into account soft shadow intensity - in case point occluded*/
-			double softShadowCoeff = getSoftShadowCoeff(light, scene);
-			if (softShadowCoeff < 1) {
-				curColor = curColor.mul((1 - light.getShadowIntesity()) + softShadowCoeff*light.getShadowIntesity());
-			}	
+			if (scene.set.getShRays() == 1) {
+				Ray lightRay = new Ray(light.getPosition(), point);
+				double intensity  = isOccluded(lightRay, scene);
+				if (intensity < 1) {
+					curColor = curColor.mul(1 - light.getShadowIntesity());
+				}
+			} else {
+				double softShadowCoeff = getSoftShadowCoeff(light, scene);
+				if (softShadowCoeff < 1) {
+					curColor = curColor.mul((1 - light.getShadowIntesity()) + softShadowCoeff*light.getShadowIntesity());
+				}
+			}
 			
 			color = color.add(curColor);
 		}
@@ -213,7 +220,7 @@ public class Intersection implements Comparable<Intersection>{
 	}
 	
 	public int compareTo(Intersection other){
-		return (int)((this.point).distance(this.ray.getP0()) - (other.point).distance(this.ray.getP0())); 
+		return (int)((this.point).distance(this.ray.getP0()) > (other.point).distance(other.ray.getP0()) ? 1:-1); 
 	}
 
 	public Vector getNormal() {

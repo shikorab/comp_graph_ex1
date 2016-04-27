@@ -12,9 +12,13 @@ public class Cylinder implements Surface {
 	final private double length;
 	final private double radius;
 	final private Material material;
-	private static Vector axisOfCylV;
-	private static Vector upCenterV;
-	private static Vector downCenterV;
+	private double offset1;
+	private double offset2;
+	private Plane plane1;
+	private Plane plane2;
+	private Vector axisOfCylV;
+	private Vector upCenterV;
+	private Vector downCenterV;
 
 	public Cylinder(double cx, double cy, double cz, double len, double radius, double rx, double ry, double rz,
 			Material material) {
@@ -30,41 +34,63 @@ public class Cylinder implements Surface {
 	public Intersection getIntersection(Ray ray) {
 		ArrayList<Intersection> intersections = new ArrayList<Intersection>();
 		
-		Point axisOfCylP = axisOfCylV.toPoint();
-		/* Get the offsets - the Vertical of each cap */
-		Vector upCenter = ray.getP0().toVec().sub(upCenterV);
-		double offset1 = upCenter.dotProduct(axisOfCylV);
-		Vector downCenter = ray.getP0().toVec().sub(downCenterV);
-		double offset2 = downCenter.dotProduct(axisOfCylV);
-
-		/* Get the plain and intersections of each cap */
-		Plane plane1 = new Plane(axisOfCylP.getX(), axisOfCylP.getY(), axisOfCylP.getZ(), offset1, this.material);
-		if (plane1 != null){
-			Intersection i1 = plane1.getIntersection(ray);
-			if (i1 != null)
-				/* The intersection point is not in the cylinder */
-				if (i1.getPoint().distance(upCenterV.toPoint()) <= this.radius){
+		/* Get the cylinder body intersections */
+		
+		Vector deltaP = ray.getP0().toVec().sub(downCenterV);
+		Vector rayProjectionOnAxis = axisOfCylV.mul(ray.direction.dotProduct(axisOfCylV));
+		Vector rayOriginToDownCenterProjection = axisOfCylV.mul(deltaP.dotProduct(axisOfCylV));
+		
+		double a = ray.direction.toPoint().distance2(rayProjectionOnAxis.toPoint());
+		double b = 2 * (ray.direction.sub(rayProjectionOnAxis)).dotProduct(deltaP.sub(rayOriginToDownCenterProjection));
+		double c = deltaP.toPoint().distance2(rayOriginToDownCenterProjection.toPoint()) - radius * radius;
+		
+		double discriminant = b * b - 4 * a * c;
+		if (discriminant >= 0){
+		
+			discriminant = Math.sqrt(discriminant);
+			double t1 = ((-1 * b) + discriminant) / (2 * a);
+			double t2 = ((-1 * b) - discriminant) / (2 * a);
+			
+			if (t1 > 0){
+				Point p1 = ray.getP0().toVec().add(ray.direction.mul(t1)).toPoint();
+				if (axisOfCylV.dotProduct(p1.toVec().sub(downCenterV)) > 0 &&
+						axisOfCylV.dotProduct(p1.toVec().sub(upCenterV)) < 0){
+					Vector downCenterToP = p1.toVec().sub(downCenterV);
+					Vector normal = downCenterToP.add(axisOfCylV.mul(downCenterToP.dotProduct(axisOfCylV))).normalize();
+					Intersection i1 = new Intersection(p1, this.material, ray, this, normal);
 					intersections.add(i1);
+//					System.out.println("i1");
 				}
-		}
-		Plane plane2 = new Plane(axisOfCylP.getX(), axisOfCylP.getY(), axisOfCylP.getZ(), offset2, this.material);
-		if (plane2 != null){
-			Intersection i2 = plane2.getIntersection(ray);
-			if (i2 != null)
-				/* The intersection point is not in the cylinder */
-				if (i2.getPoint().distance(downCenterV.toPoint()) <= this.radius){
+			}
+			if (t2 > 0){
+				Point p2 = ray.getP0().toVec().add(ray.direction.mul(t2)).toPoint();
+				if (axisOfCylV.dotProduct(p2.toVec().sub(downCenterV)) > 0 &&
+						axisOfCylV.dotProduct(p2.toVec().sub(upCenterV)) < 0){
+					Vector downCenterToP = p2.toVec().sub(downCenterV);
+					Vector normal = downCenterToP.add(axisOfCylV.mul(downCenterToP.dotProduct(axisOfCylV))).normalize();
+					Intersection i2 = new Intersection(p2, this.material, ray, this, normal);
 					intersections.add(i2);
-				}	
-		}
-		/* Get the sphere and its intersection */
-		Sphere sphr = new Sphere(this.center.getX(), this.center.getY(), this.center.getZ(), this.radius,
-				this.material);
-		if (sphr != null){
-			Intersection i3 = sphr.getIntersection(ray);
-			if (i3 != null){
-				intersections.add(i3);
+//					System.out.println("i2");
+				}
 			}
 		}
+		
+		/* Get the plain and intersections of each cap */
+		Intersection i3 = plane1.getIntersection(ray);
+		if (i3 != null)
+			/* The intersection point is not in the cylinder */
+			if (i3.getPoint().distance2(upCenterV.toPoint()) <= this.radius * this.radius){
+//				System.out.println("i3");
+				intersections.add(i3);
+			}
+
+		Intersection i4 = plane2.getIntersection(ray);
+		if (i4 != null)
+			/* The intersection point is not in the cylinder */
+			if (i4.getPoint().distance2(downCenterV.toPoint()) <= this.radius * this.radius){
+//				System.out.println("i4");
+				intersections.add(i4);
+			}
 		
 		/* No intersection point has been detected */
 		if (intersections.size() == 0)
@@ -72,6 +98,7 @@ public class Cylinder implements Surface {
 		
 		/* Sort the intersections */
 		Collections.sort(intersections);
+//		System.out.println("intersection point: " + intersections.get(0).getPoint());
 		
 		/* Get the minimal intersection point */
 		return new Intersection(intersections.get(0).getPoint(), intersections.get(0).material, ray, this, intersections.get(0).getNormal());
@@ -82,7 +109,7 @@ public class Cylinder implements Surface {
 	   the axis of the cylinder, up center vector, down center vector
 	 */
 	private void setVectors() {
-		Vector localUpCenterV = new Vector(0, 1, 0).mul(this.length/2);
+		Vector localUpCenterV = new Vector(0, 0, 1).mul(this.length/2);
 		Point upCenterP = localUpCenterV.toPoint();
 		
 		// Rotate by X
@@ -119,14 +146,16 @@ public class Cylinder implements Surface {
 		downCenterV = this.center.toVec().add(down.mul(this.length / 2));
 		// Set axis of the cylinder
 		axisOfCylV = upCenterV.sub(downCenterV).normalize();
+		
+		// Get the offsets - the Vertical of each cap
+		offset1 = upCenterV.dotProduct(axisOfCylV);
+		offset2 = downCenterV.dotProduct(axisOfCylV);
+		// Set plane1 and plane2
+		Point axisOfCylP = axisOfCylV.toPoint();
+		plane1 = new Plane(axisOfCylP.getX(), axisOfCylP.getY(), axisOfCylP.getZ(), offset1, this.material);
+		plane2 = new Plane(axisOfCylP.getX(), axisOfCylP.getY(), axisOfCylP.getZ(), offset2, this.material);
 
+//		System.out.println("axisOfCylV " + axisOfCylV.toString() + " offset1: " + offset1 + " offset2: " + offset2 + " upCenter: " + upCenterV + " downCenter: " + downCenterV);
 	}
 	
-	/**
-	 * This function returns 2D point from a 3D point by Mercator projection 
-	 */
-//	public Point getTwoProjection(Point p, double radius){
-//		
-//	}
-
 }

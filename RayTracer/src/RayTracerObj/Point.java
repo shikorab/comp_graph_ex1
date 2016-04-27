@@ -76,4 +76,12 @@ public class Point {
 		return Math.sqrt(x + y + z);
 	}
 	
+	public double distance2(Point other) {
+		double x = Math.pow(getX() - other.getX(), 2);
+		double y = Math.pow(getY() - other.getY(), 2);
+		double z = Math.pow(getZ() - other.getZ(), 2);
+		
+		return (x + y + z);
+	}
+	
 }
